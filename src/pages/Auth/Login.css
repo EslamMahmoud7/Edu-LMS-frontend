@@ -1,0 +1,340 @@
+/* Base Styles */
+:root {
+  --primary-color: #2a3fa8;
+  --secondary-color: #70a0e9;
+  --text-color: #2b2d42;
+  --light-text: #8d99ae;
+  --background-color: #f8f9fa;
+  --white: #ffffff;
+  --error-color: #ef233c;
+  --google-red: #db4437;
+  --microsoft-blue: #00a1f1;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Left Side - Illustration */
+.login-illustration {
+  flex: 1;
+  background: linear-gradient(135deg, #1a2767, #70a0e9);
+  color: var(--white);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.illustration-content {
+  max-width: 500px;
+  text-align: center;
+}
+
+.illustration-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.illustration-content p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.mock-illustration {
+  position: relative;
+  background: linear-gradient(
+      135deg,
+      rgba(67, 97, 238, 0.4),
+      rgba(63, 55, 201, 0.6)
+    ),
+    url("/istockphoto-1411680651-612x612.jpg") center/cover;
+  background-blend-mode: overlay;
+  border-radius: 8px;
+}
+
+/* Right Side - Form */
+.login-form-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: var(--white);
+}
+
+/* Add these to your existing CSS */
+
+.login-illustration {
+  position: relative; /* Add this to make absolute positioning work for child */
+  /* ... other existing styles ... */
+}
+
+.illustration-logo {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  z-index: 10;
+}
+
+.illustration-content {
+  margin-top: 4rem;
+}
+
+.illustration-logo span {
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .illustration-logo {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .illustration-content {
+    margin-top: 3rem;
+  }
+}
+.login-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo h2 {
+  font-size: 2rem;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.login-form h3 {
+  font-size: 1.5rem;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.subtext {
+  color: var(--light-text);
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.error-message {
+  color: var(--error-color);
+  background-color: rgba(239, 35, 60, 0.1);
+  padding: 0.75rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--light-text);
+  font-size: 0.9rem;
+}
+
+.input-with-icon input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  transition: border-color 0.3s;
+}
+
+.input-with-icon input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.remember-me input {
+  margin-right: 0.5rem;
+}
+
+.forgot-password {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.login-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 1.5rem;
+}
+
+.login-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.login-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  color: var(--light-text);
+  font-size: 0.8rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.divider::before {
+  margin-right: 1rem;
+}
+
+.divider::after {
+  margin-left: 1rem;
+}
+
+.social-login {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.social-button {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  background-color: transparent;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.social-button.google {
+  color: var(--google-red);
+}
+
+.social-button.microsoft {
+  color: var(--microsoft-blue);
+}
+
+.social-button:hover {
+  background-color: #f8f9fa;
+}
+
+.signup-text {
+  text-align: center;
+  color: var(--light-text);
+  font-size: 0.9rem;
+}
+
+.signup-text a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.signup-text a:hover {
+  text-decoration: underline;
+}
+
+.login-footer {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+}
+
+.login-footer a {
+  color: var(--light-text);
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .login-illustration {
+    padding: 1.5rem;
+  }
+
+  .illustration-content h1 {
+    font-size: 2rem;
+  }
+
+  .mock-illustration {
+    height: 200px;
+  }
+}

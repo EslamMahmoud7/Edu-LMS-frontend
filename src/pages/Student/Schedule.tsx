@@ -1,0 +1,159 @@
+import { useState } from "react";
+import { Search, Clock3 } from "lucide-react";
+import Navbar from "../../layouts/Navbar";
+import { useAuth } from "../../Context/useAuth";
+
+const sampleSchedule = [
+  {
+    date: "2025-04-19",
+    day: "Monday",
+    time: "9:00 AM",
+    subject: "Web Development",
+    room: "Rm 101, IT",
+    doctor: "dr.osman@example.com",
+  },
+  {
+    date: "2025-04-19",
+    day: "Monday",
+    time: "11:00 AM",
+    subject: "Data Structures",
+    room: "Rm 202, CS",
+    doctor: "dr.ahmed@example.com",
+  },
+  {
+    date: "2025-04-20",
+    day: "Tuesday",
+    time: "8:00 AM",
+    subject: "Networking",
+    room: "Rm 303, Net",
+    doctor: "dr.salma@example.com",
+  },
+];
+
+const subjectColors: Record<string, string> = {
+  "Web Development": "bg-blue-100",
+  "Data Structures": "bg-green-100",
+  Networking: "bg-yellow-100",
+};
+
+export default function SchedulePage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedWeek, setSelectedWeek] = useState("all");
+  const { user } = useAuth();
+
+  const filtered = sampleSchedule.filter((cls) => {
+    const matchesSearch =
+      cls.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cls.room.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cls.doctor.toLowerCase().includes(searchTerm.toLowerCase());
+    return selectedWeek === "all" || matchesSearch;
+  });
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar toggleSidebar={() => {}} role={user?.role || "student"} />
+      <main className="flex-1 p-6 bg-blue-50 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <h1 className="text-2xl font-bold text-blue-900">
+            Semester Schedule
+          </h1>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center bg-white border border-gray-300 rounded px-2 py-1">
+              <Search className="w-4 h-4 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Search schedule..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="outline-none px-2 py-1 text-sm bg-transparent"
+              />
+            </div>
+            <select
+              className="text-sm border border-gray-300 rounded px-2 py-1"
+              value={selectedWeek}
+              onChange={(e) => setSelectedWeek(e.target.value)}
+            >
+              <option value="all">All Weeks</option>
+              <option value="2025-04-19">Week 1</option>
+              <option value="2025-04-26">Week 2</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-2xl shadow p-4 border-l-4 border-blue-500 overflow-x-auto">
+          <table className="min-w-full table-auto text-sm text-gray-700">
+            <thead className="bg-blue-100 text-blue-800 sticky top-0">
+              <tr>
+                <th className="border px-3 py-2">Date</th>
+                <th className="border px-3 py-2">Day</th>
+                <th className="border px-3 py-2">Time</th>
+                <th className="border px-3 py-2">Subject</th>
+                <th className="border px-3 py-2">Room</th>
+                <th className="border px-3 py-2">Doctor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((cls, i) => {
+                const now = new Date();
+                const isToday =
+                  new Date(cls.date).toDateString() === now.toDateString();
+                const color = subjectColors[cls.subject] || "";
+                return (
+                  <tr
+                    key={i}
+                    className={`hover:bg-blue-50 ${color} ${
+                      isToday ? "ring-1 ring-blue-300" : ""
+                    }`}
+                  >
+                    <td className="border px-3 py-2">{cls.date}</td>
+                    <td className="border px-3 py-2">{cls.day}</td>
+                    <td className="border px-3 py-2 flex items-center gap-1">
+                      <Clock3 className="w-4 h-4 text-blue-500" />
+                      {cls.time}
+                    </td>
+                    <td className="border px-3 py-2 font-semibold text-blue-800">
+                      {cls.subject}
+                    </td>
+                    <td className="border px-3 py-2">{cls.room}</td>
+                    <td className="border px-3 py-2">
+                      <a
+                        href={`mailto:${cls.doctor}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {cls.doctor}
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile-Friendly Accordion (Optional) */}
+        <div className="block md:hidden">
+          {filtered.map((cls, i) => (
+            <div key={i} className="bg-white rounded-xl shadow p-4 mb-4">
+              <h2 className="font-bold text-blue-800 text-lg mb-2">
+                {cls.subject}
+              </h2>
+              <p className="text-sm text-gray-600">Date: {cls.date}</p>
+              <p className="text-sm text-gray-600">Time: {cls.time}</p>
+              <p className="text-sm text-gray-600">Room: {cls.room}</p>
+              <p className="text-sm text-gray-600">
+                Doctor:{" "}
+                <a
+                  href={`mailto:${cls.doctor}`}
+                  className="text-blue-600 underline"
+                >
+                  {cls.doctor}
+                </a>
+              </p>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
