@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Search, Clock3 } from "lucide-react";
-import Navbar from "../../layouts/Navbar";
-import { useAuth } from "../../Context/useAuth";
 
 const sampleSchedule = [
   {
@@ -39,7 +37,6 @@ const subjectColors: Record<string, string> = {
 export default function SchedulePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedWeek, setSelectedWeek] = useState("all");
-  const { user } = useAuth();
 
   const filtered = sampleSchedule.filter((cls) => {
     const matchesSearch =
@@ -51,7 +48,6 @@ export default function SchedulePage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar toggleSidebar={() => {}} role={user?.role || "student"} />
       <main className="flex-1 p-6 bg-blue-50 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <h1 className="text-2xl font-bold text-blue-900">
