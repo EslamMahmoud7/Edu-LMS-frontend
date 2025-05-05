@@ -5,14 +5,15 @@ import Layout from "./layouts/Layout";
 
 // Student Pages
 import StudentDashboard from "./pages/Student/StudentDashboard";
-import { AcademicRecords } from "./pages/Student/AcademicRecords";
-import { Assignment } from "./pages/Student/Assignment";
+import AcademicRecords from "./pages/Student/AcademicRecords";
+import Assignment from "./pages/Student/Assignment";
+import QuizzesPage from "./pages/Student/Quizzes";
 import Schedule from "./pages/Student/Schedule";
 import { Settings } from "./pages/Student/Settings";
 import UserProfile from "./pages/Student/UserProfile";
-import { Courses } from "./pages/Student/Courses";
+import Courses from "./pages/Student/Courses";
 import { Payment } from "./pages/Student/Payment";
-import { Community } from "./pages/Student/Community";
+
 import NotificationsPage from "./pages/NotficationsPage";
 
 // Admin Pages
@@ -25,7 +26,7 @@ import { Students } from "./pages/Admin/Students";
 import { Payment as AdminPayment } from "./pages/Admin/Payment";
 import { AcademicRecords as AdminRecords } from "./pages/Admin/AcademicRecords";
 import { Settings as AdminSettings } from "./pages/Admin/Settings";
-import { Community as AdminCommunity } from "./pages/Admin/Community";
+
 import AdminProfile from "./pages/Admin/AdminProfile";
 export default function App() {
   return (
@@ -47,7 +48,8 @@ export default function App() {
           <Route path="schedule" element={<Schedule />} />
           <Route path="academicRecords" element={<AcademicRecords />} />
           <Route path="payment" element={<Payment />} />
-          <Route path="community" element={<Community />} />
+          <Route path="quizzes" element={<QuizzesPage />} />
+
           <Route
             path="notifications"
             element={<NotificationsPage role="student" />}
@@ -68,7 +70,6 @@ export default function App() {
             <Route path="payment" element={<AdminPayment />} />
             <Route path="academicRecords" element={<AdminRecords />} />
             <Route path="settings" element={<AdminSettings />} />
-            <Route path="community" element={<AdminCommunity />} />
             <Route path="profile" element={<AdminProfile />} />
             <Route
               path="notifications"

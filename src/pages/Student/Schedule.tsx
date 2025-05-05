@@ -127,7 +127,7 @@ export default function SchedulePage() {
           </table>
         </div>
 
-        {/* Mobile-Friendly Accordion (Optional) */}
+        {/* Mobile-Friendly Accordion */}
         <div className="block md:hidden">
           {filtered.map((cls, i) => (
             <div key={i} className="bg-white rounded-xl shadow p-4 mb-4">

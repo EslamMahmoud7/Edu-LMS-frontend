@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Bell,
-  MessageSquare,
-  Search,
-  LogOut,
-  Menu,
-  AlertCircle,
-} from "lucide-react";
+import { Bell, Search, LogOut, Menu, AlertCircle } from "lucide-react";
 
 interface NavbarProps {
   toggleSidebar: () => void;
@@ -16,36 +9,12 @@ interface NavbarProps {
 
 export default function Navbar({ toggleSidebar, role }: NavbarProps) {
   const navigate = useNavigate();
-  const [showMessages, setShowMessages] = useState(false);
+
   const [showNotifications, setShowNotifications] = useState(false);
 
   const handleLogout = () => {
     navigate("/login");
   };
-
-  const messages = [
-    {
-      id: 1,
-      sender: "Prof. Daniel",
-      content: "Reminder: submit your project report.",
-      time: "10 min ago",
-      read: false,
-    },
-    {
-      id: 2,
-      sender: "Alex Kim",
-      content: "Hey! Can we discuss the group task?",
-      time: "1 hour ago",
-      read: true,
-    },
-    {
-      id: 3,
-      sender: "System",
-      content: "New course materials are uploaded.",
-      time: "Yesterday",
-      read: true,
-    },
-  ];
 
   const notifications = [
     {
@@ -108,69 +77,12 @@ export default function Navbar({ toggleSidebar, role }: NavbarProps) {
 
       {/* Right: Icons + Profile */}
       <div className="flex items-center gap-4 relative">
-        {/* Messages */}
-        <div className="relative">
-          <MessageSquare
-            className="h-6 w-6 text-gray-600 hover:text-green-500 cursor-pointer"
-            onClick={() => {
-              setShowMessages(!showMessages);
-              setShowNotifications(false);
-            }}
-          />
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1.5 rounded-full">
-            {messages.filter((m) => !m.read).length}
-          </span>
-          {showMessages && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-              <div className="p-4">
-                <h4 className="text-sm font-semibold text-gray-700">
-                  New Messages
-                </h4>
-              </div>
-              <ul className="divide-y max-h-64 overflow-y-auto">
-                {messages.map((msg) => (
-                  <li
-                    key={msg.id}
-                    className={`p-4 hover:bg-gray-100 ${
-                      msg.read ? "" : "bg-blue-50"
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-800">
-                        {msg.sender}
-                      </span>
-                      <span className="text-[10px] text-gray-500">
-                        {msg.time}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">{msg.content}</p>
-                  </li>
-                ))}
-              </ul>
-              <div className="text-center text-sm p-2 border-t">
-                <button
-                  className="text-blue-600 hover:underline"
-                  onClick={() => {
-                    const path =
-                      role === "admin" ? "/admin/community" : "/community";
-                    navigate(path);
-                    setShowNotifications(false);
-                  }}
-                >
-                  View All Messages →
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Notifications */}
         <div className="relative">
           <Bell
             className="h-6 w-6 text-gray-600 hover:text-yellow-500 cursor-pointer"
             onClick={() => {
               setShowNotifications(!showNotifications);
-              setShowMessages(false);
             }}
           />
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1.5 rounded-full">
