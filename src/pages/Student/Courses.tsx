@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import api from "../../services/api"
 
 interface Course {
   code: string;
   title: string;
   credits: number;
   instructor: string;
-  instructorEmail: string;
   prerequisites?: string[];
+
+  instructorEmail: string;
   resourceLink: string;
-  progress: number; // percent complete
-  nextDeadline: string; // ISO date of next assignment/quiz
+  progress: number;
+  nextDeadline: string;
+  level: string;
 }
 
 interface LevelData {
@@ -18,66 +21,68 @@ interface LevelData {
   courses: Course[];
 }
 
-// Fake API
-const fetchCourses = (): Promise<LevelData[]> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          level: "Level 1",
-          courses: [
-            {
-              code: "CS101",
-              title: "Introduction to Computer Science",
-              credits: 3,
-              instructor: "Dr. A. Smith",
-              instructorEmail: "a.smith@example.com",
-              prerequisites: [],
-              resourceLink: "https://example.com/syllabus/cs101",
-              progress: 40,
-              nextDeadline: "2025-05-03",
-            },
-            {
-              code: "MATH101",
-              title: "Calculus I",
-              credits: 4,
-              instructor: "Dr. B. Jones",
-              instructorEmail: "b.jones@example.com",
-              prerequisites: [],
-              resourceLink: "https://example.com/syllabus/math101",
-              progress: 75,
-              nextDeadline: "2025-05-07",
-            },
-          ],
-        },
-        {
-          level: "Level 2",
-          courses: [
-            {
-              code: "CS201",
-              title: "Data Structures",
-              credits: 3,
-              instructor: "Dr. D. Kim",
-              instructorEmail: "d.kim@example.com",
-              prerequisites: ["CS101"],
-              resourceLink: "https://example.com/syllabus/cs201",
-              progress: 20,
-              nextDeadline: "2025-04-28",
-            },
-          ],
-        },
-      ]);
-    }, 500);
-  });
+const fetchMyCourses = async (): Promise<LevelData[]> => {
+  try {
+    // 1) pull user object from localStorage
+    const stored = localStorage.getItem("eduSyncUser");
+    if (!stored) throw new Error("Not logged in");
+    const { id: studentId, token } = JSON.parse(stored);
+
+    // 2) call the new endpoint with the route param
+    const { data: raw } = await api.get<
+      Array<{
+        code: string;
+        title: string;
+        credits: number;
+        instructorName: string;
+        instructorEmail: string;
+        resourceLink: string;
+        progress: number;
+        nextDeadline: string;
+        level: number;
+      }>
+    >(`/api/course/mine/${studentId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // 3) map into your front-end interface
+    const list: Course[] = raw.map((c) => ({
+      code: c.code,
+      title: c.title,
+      credits: c.credits,
+      instructor: c.instructorName,
+      instructorEmail: c.instructorEmail,
+      resourceLink: c.resourceLink,
+      progress: c.progress,
+      nextDeadline: c.nextDeadline,
+      level: String(c.level),
+    }));
+
+    // 4) group by level
+    const map: Record<string, Course[]> = {};
+    list.forEach((c) => {
+      if (!map[c.level]) map[c.level] = [];
+      map[c.level].push(c);
+    });
+
+    return Object.entries(map).map(([level, courses]) => ({
+      level,
+      courses,
+    }));
+  } catch (err) {
+    console.error("Error loading courses:", err);
+    return [];
+  }
+};
 
 export default function CoursesPage() {
   const [levels, setLevels] = useState<LevelData[]>([]);
-  const [selectedLevel, setSelectedLevel] = useState<string>("");
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedLevel, setSelectedLevel] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchCourses()
+    fetchMyCourses()
       .then((data) => {
         setLevels(data);
         if (data.length) setSelectedLevel(data[0].level);
@@ -85,9 +90,8 @@ export default function CoursesPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return <p className="p-6 text-gray-600">Loading courses...</p>;
-  }
+  if (loading) return <p>Loading your courses…</p>;
+  if (!levels.length) return <p>You’re not enrolled in any courses.</p>;
 
   const currentLevel =
     levels.find((l) => l.level === selectedLevel) || levels[0];

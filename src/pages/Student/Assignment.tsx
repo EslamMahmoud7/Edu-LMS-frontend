@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import api from "../../services/api";
 
 // --- Data Types ---
 interface Assignment {
-  id: number;
+  id: string;
   title: string;
   course: string;
   dueDate: string;
@@ -12,46 +13,39 @@ interface Assignment {
   grade?: string;
 }
 
-// --- Fake API ---
-const fetchAssignments = (): Promise<Assignment[]> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: 1,
-          title: "React Project Report",
-          course: "Web Development",
-          dueDate: "2025-05-01",
-          status: "Pending",
-        },
-        {
-          id: 2,
-          title: "Data Structures Quiz",
-          course: "Data Structures",
-          dueDate: "2025-04-25",
-          status: "Submitted",
-          submissionDate: "2025-04-20",
-        },
-        {
-          id: 3,
-          title: "Calculus Homework",
-          course: "Calculus II",
-          dueDate: "2025-04-18",
-          status: "Graded",
-          submissionDate: "2025-04-17",
-          grade: "A-",
-        },
-      ]);
-    }, 800);
+// --- Real API ---
+const fetchAssignments = async (): Promise<Assignment[]> => {
+  const stored = localStorage.getItem("eduSyncUser");
+  if (!stored) throw new Error("Not logged in");
+  const { id: studentId, token } = JSON.parse(stored);
+
+  const { data } = await api.get<
+    Array<{
+      title: string;
+      description: string;
+      dueDate: string;
+      courseTitle: string;
+    }>
+  >(`/api/assignment/mine/${studentId}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
+
+  return data.map((a, idx) => ({
+    id: `${idx}`,
+    title: a.title,
+    course: a.courseTitle,
+    dueDate: new Date(a.dueDate).toLocaleDateString(),
+    status: "Pending",
+  }));
+};
 
 export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [filtered, setFiltered] = useState<Assignment[]>([]);
+  const [filtered, setFiltered]       = useState<Assignment[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>("All");
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [selected, setSelected] = useState<Assignment | null>(null);
+  const [searchTerm, setSearchTerm]   = useState<string>("");
+  const [loading, setLoading]         = useState<boolean>(true);
+  const [selected, setSelected]       = useState<Assignment | null>(null);
 
   useEffect(() => {
     fetchAssignments()
@@ -103,16 +97,7 @@ export default function AssignmentsPage() {
               </button>
             ))}
           </div>
-          <div className="flex items-center bg-white border border-gray-300 rounded px-3 py-2 max-w-md">
-            <Search className="w-5 h-5 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Search assignments..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="ml-2 w-full bg-transparent outline-none text-sm"
-            />
-          </div>
+          
         </div>
 
         {/* Assignment Cards */}
@@ -137,9 +122,7 @@ export default function AssignmentsPage() {
               >
                 <div>
                   <p className="font-semibold text-blue-800">{a.title}</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Course: {a.course}
-                  </p>
+                  <p className="text-sm text-gray-500 mt-1">Course: {a.course}</p>
                   <p className="text-sm text-gray-500">Due: {a.dueDate}</p>
                   <p className="mt-2 text-sm">
                     Status:{" "}
@@ -147,12 +130,12 @@ export default function AssignmentsPage() {
                       {a.status}
                     </span>
                   </p>
-                  {a.status !== "Pending" && (
+                  {a.status !== "Pending" && a.submissionDate && (
                     <p className="text-xs text-gray-600">
                       Submitted: {a.submissionDate}
                     </p>
                   )}
-                  {a.status === "Graded" && (
+                  {a.status === "Graded" && a.grade && (
                     <p className="text-sm text-green-700 font-semibold">
                       Grade: {a.grade}
                     </p>
@@ -190,15 +173,15 @@ export default function AssignmentsPage() {
               <p className="mb-2">
                 <span className="font-semibold">Course:</span> {selected.course}
               </p>
-              {selected.status === "Graded" ? (
+              {selected.status === "Graded" && selected.grade ? (
                 <p className="mb-4 text-green-700 font-semibold">
                   Grade: {selected.grade}
                 </p>
-              ) : (
+              ) : selected.submissionDate ? (
                 <p className="mb-4">
                   Submission Date: {selected.submissionDate}
                 </p>
-              )}
+              ) : null}
               <button
                 onClick={() => setSelected(null)}
                 className="mt-2 w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-full text-sm"

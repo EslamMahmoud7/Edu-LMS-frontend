@@ -1,5 +1,4 @@
-// src/pages/student/Profile.tsx
-
+import { useState, useEffect } from "react";
 import {
   Pencil,
   UploadCloud,
@@ -8,58 +7,65 @@ import {
   Award,
   List,
 } from "lucide-react";
+import api from "../../services/api";
+
+interface ProfileDTO {
+  id: string;
+  fullName: string;
+  role: string;
+  email: string;
+  phone: string;
+  joinedDate: string;
+  institution: string;
+  totalCourses: number;
+  gpa: number;
+  status: string;
+  avatarUrl?: string;
+  achievements: string[];
+  recentActivity: string[];
+  socialLinks: string[];
+}
 
 export default function Profile() {
-  // Mock user data
-  const user = {
-    name: "Jane Doe",
-    role: "Computer Science Student",
-    email: "jane.doe@example.com",
-    phone: "+20 100 123 4567",
-    joined: "September 2023",
-    institution: "Cairo University",
-    totalCourses: 12,
-    gpa: 3.85,
-    status: "Excellent",
-    avatarUrl: "https://i.pravatar.cc/150?img=47",
-  };
+  const [profile, setProfile] = useState<ProfileDTO | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Recent activities
-  const recentActivities = [
-    { icon: List, text: "Submitted “Essay on AI” – April 10" },
-    { icon: List, text: "Completed “React Basics” Quiz – March 28" },
-    { icon: List, text: "Enrolled in “Advanced CSS” – March 20" },
-  ];
+  useEffect(() => {
+    (async () => {
+      try {
+        const stored = localStorage.getItem("eduSyncUser");
+        if (!stored) throw new Error("Not logged in");
+        const { id: userId, token } = JSON.parse(stored);
 
-  // Security settings options
-  const securityOptions = [{ label: "Change Password", icon: Lock }];
+        const { data } = await api.get<ProfileDTO>(`/api/profile/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-  // Social links
-  const socialLinks = [
-    { label: "LinkedIn", url: "#", icon: LinkIcon },
-    { label: "GitHub", url: "#", icon: LinkIcon },
-  ];
+        setProfile(data);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.response?.data || err.message || "Failed to load profile");
+      }
+    })();
+  }, []);
 
-  // Achievements
-  const achievements = [
-    { label: "Quiz Master", icon: Award, color: "bg-yellow-200" },
-    { label: "10 Courses", icon: Award, color: "bg-green-200" },
-  ];
+  if (error) {
+    return <p className="p-6 text-red-500">{error}</p>;
+  }
+  if (!profile) {
+    return <p className="p-6 text-gray-600">Loading profile…</p>;
+  }
+  if(profile.role == "0") profile.role = "Student"; 
 
   return (
     <div className="p-6 bg-blue-50 min-h-screen text-gray-900">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-blue-900">My Profile</h1>
-      </div>
-
       {/* Basic Info */}
       <section className="bg-white rounded-2xl shadow p-6 border-l-4 border-blue-500 mb-6">
         <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
           <div className="relative">
             <img
-              src={user.avatarUrl}
-              alt={`${user.name} avatar`}
+              src={profile.avatarUrl || "/fallback-avatar.png"}
+              alt={`${profile.fullName} avatar`}
               className="w-24 h-24 rounded-full border-4 border-blue-500 object-cover"
             />
             <button
@@ -73,9 +79,9 @@ export default function Profile() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xl font-semibold text-blue-800">
-                  {user.name}
+                  {profile.fullName}
                 </p>
-                <p className="text-gray-500">{user.role}</p>
+                <p className="text-gray-500">{profile.role}</p>
               </div>
               <button
                 aria-label="Edit profile"
@@ -87,15 +93,15 @@ export default function Profile() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
               <div>
                 <p className="text-sm text-gray-500">Email</p>
-                <p className="text-blue-800 font-medium">{user.email}</p>
+                <p className="text-blue-800 font-medium">{profile.email}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Phone</p>
-                <p className="text-blue-800 font-medium">{user.phone}</p>
+                <p className="text-blue-800 font-medium">{profile.phone}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Joined</p>
-                <p className="text-blue-800 font-medium">{user.joined}</p>
+                <p className="text-blue-800 font-medium">{profile.joinedDate}</p>
               </div>
             </div>
           </div>
@@ -105,10 +111,10 @@ export default function Profile() {
       {/* Stats Grid */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         {[
-          { label: "Institution", value: user.institution },
-          { label: "Total Courses", value: user.totalCourses },
-          { label: "GPA", value: user.gpa.toFixed(2) },
-          { label: "Status", value: user.status },
+          { label: "Institution", value: profile.institution },
+          { label: "Total Courses", value: profile.totalCourses },
+          { label: "GPA", value: profile.gpa.toFixed(2) },
+          { label: "Status", value: profile.status },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -126,10 +132,10 @@ export default function Profile() {
           Recent Activity
         </h2>
         <ul className="space-y-2 text-gray-700">
-          {recentActivities.map((act, idx) => (
+          {profile.recentActivity.map((text, idx) => (
             <li key={idx} className="flex items-center space-x-2">
-              <act.icon className="w-5 h-5 text-blue-500" />
-              <span>{act.text}</span>
+              <List className="w-5 h-5 text-blue-500" />
+              <span>{text}</span>
             </li>
           ))}
         </ul>
@@ -142,15 +148,10 @@ export default function Profile() {
             Security Settings
           </h2>
           <ul className="space-y-3 text-gray-700">
-            {securityOptions.map((opt, i) => (
-              <li
-                key={i}
-                className="flex items-center space-x-2 cursor-pointer hover:text-blue-600 transition"
-              >
-                <opt.icon className="w-5 h-5" />
-                <span>{opt.label}</span>
-              </li>
-            ))}
+            <li className="flex items-center space-x-2 cursor-pointer hover:text-blue-600 transition">
+              <Lock className="w-5 h-5" />
+              <span>Change Password</span>
+            </li>
           </ul>
         </div>
         <div className="bg-white rounded-2xl shadow p-6">
@@ -158,11 +159,11 @@ export default function Profile() {
             Social & Links
           </h2>
           <ul className="space-y-3 text-gray-700">
-            {socialLinks.map((link, i) => (
+            {profile.socialLinks.map((url, i) => (
               <li key={i} className="flex items-center space-x-2">
-                <link.icon className="w-5 h-5 text-blue-500" />
-                <a href={link.url} className="hover:underline">
-                  {link.label}
+                <LinkIcon className="w-5 h-5 text-blue-500" />
+                <a href={url} className="hover:underline">
+                  {url}
                 </a>
               </li>
             ))}
@@ -174,13 +175,13 @@ export default function Profile() {
       <section className="bg-white rounded-2xl shadow p-6">
         <h2 className="text-lg font-bold text-blue-800 mb-4">Achievements</h2>
         <div className="flex flex-wrap gap-2">
-          {achievements.map((ach, i) => (
+          {profile.achievements.map((label, i) => (
             <div
               key={i}
-              className={`${ach.color} px-3 py-1 rounded-full text-xs flex items-center space-x-1`}
+              className="bg-yellow-200 px-3 py-1 rounded-full text-xs flex items-center space-x-1"
             >
-              <ach.icon className="w-4 h-4" />
-              <span>{ach.label}</span>
+              <Award className="w-4 h-4" />
+              <span>{label}</span>
             </div>
           ))}
         </div>
