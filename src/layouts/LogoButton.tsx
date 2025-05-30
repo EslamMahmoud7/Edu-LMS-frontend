@@ -1,4 +1,3 @@
-// components/LogoButton.tsx
 import { Menu } from "lucide-react";
 
 interface LogoButtonProps {

@@ -1,4 +1,3 @@
-// src/layouts/Layout.tsx
 import { useState, useRef, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
@@ -27,7 +26,7 @@ export default function Layout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // fall back to "student" if no user or role
+
   const role = user?.role === "admin" ? "admin" : "student";
 
   return (

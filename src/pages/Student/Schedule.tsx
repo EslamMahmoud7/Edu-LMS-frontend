@@ -1,32 +1,17 @@
-import { useState } from "react";
-import { Search, Clock3 } from "lucide-react";
+// src/pages/Student/SchedulePage.tsx
 
-const sampleSchedule = [
-  {
-    date: "2025-04-19",
-    day: "Monday",
-    time: "9:00 AM",
-    subject: "Web Development",
-    room: "Rm 101, IT",
-    doctor: "dr.osman@example.com",
-  },
-  {
-    date: "2025-04-19",
-    day: "Monday",
-    time: "11:00 AM",
-    subject: "Data Structures",
-    room: "Rm 202, CS",
-    doctor: "dr.ahmed@example.com",
-  },
-  {
-    date: "2025-04-20",
-    day: "Tuesday",
-    time: "8:00 AM",
-    subject: "Networking",
-    room: "Rm 303, Net",
-    doctor: "dr.salma@example.com",
-  },
-];
+import React, { useState, useEffect } from "react";
+import { Search, Clock3 } from "lucide-react";
+import api from "../../services/api";
+
+interface ScheduleDTO {
+  date: string;
+  day: string;
+  time: string;
+  subject: string; 
+  room: string;
+  doctor: string;
+}
 
 const subjectColors: Record<string, string> = {
   "Web Development": "bg-blue-100",
@@ -37,13 +22,59 @@ const subjectColors: Record<string, string> = {
 export default function SchedulePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedWeek, setSelectedWeek] = useState("all");
+  const [schedule, setSchedule] = useState<ScheduleDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtered = sampleSchedule.filter((cls) => {
+  useEffect(() => {
+    async function fetchSchedule() {
+      try {
+        const stored = localStorage.getItem("eduSyncUser");
+        if (!stored) throw new Error("You are not logged in.");
+
+        const { id: studentId, token } = JSON.parse(stored);
+        if (!studentId || !token) throw new Error("Missing user ID or token.");
+
+        const { data } = await api.get<ScheduleDTO[]>(
+          `/api/courseschedule/mine/${studentId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setSchedule(
+          data.map((cls) => ({
+            ...cls,
+            // ensure only the date portion for filtering/display
+            date: cls.date.split("T")[0],
+          }))
+        );
+      } catch (err: any) {
+        console.error("Schedule fetch error:", err);
+        setError(err.message || "Failed to load schedule");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSchedule();
+  }, []);
+
+  if (loading) {
+    return <p className="p-6 text-gray-600">Loading schedule…</p>;
+  }
+  if (error) {
+    return <p className="p-6 text-red-500">{error}</p>;
+  }
+
+  const filtered = schedule.filter((cls) => {
     const matchesSearch =
       cls.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cls.room.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cls.doctor.toLowerCase().includes(searchTerm.toLowerCase());
-    return selectedWeek === "all" || matchesSearch;
+
+    const matchesWeek =
+      selectedWeek === "all" || cls.date === selectedWeek;
+
+    return matchesWeek && matchesSearch;
   });
 
   return (
@@ -69,14 +100,17 @@ export default function SchedulePage() {
               value={selectedWeek}
               onChange={(e) => setSelectedWeek(e.target.value)}
             >
-              <option value="all">All Weeks</option>
-              <option value="2025-04-19">Week 1</option>
-              <option value="2025-04-26">Week 2</option>
+              <option value="all">All Dates</option>
+              {[...new Set(schedule.map((s) => s.date))].map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
             </select>
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table for desktop */}
         <div className="bg-white rounded-2xl shadow p-4 border-l-4 border-blue-500 overflow-x-auto">
           <table className="min-w-full table-auto text-sm text-gray-700">
             <thead className="bg-blue-100 text-blue-800 sticky top-0">
@@ -91,10 +125,10 @@ export default function SchedulePage() {
             </thead>
             <tbody>
               {filtered.map((cls, i) => {
-                const now = new Date();
-                const isToday =
-                  new Date(cls.date).toDateString() === now.toDateString();
+                const today = new Date().toDateString();
+                const isToday = new Date(cls.date).toDateString() === today;
                 const color = subjectColors[cls.subject] || "";
+
                 return (
                   <tr
                     key={i}
@@ -127,7 +161,7 @@ export default function SchedulePage() {
           </table>
         </div>
 
-        {/* Mobile-Friendly Accordion */}
+        {/* Accordion for mobile */}
         <div className="block md:hidden">
           {filtered.map((cls, i) => (
             <div key={i} className="bg-white rounded-xl shadow p-4 mb-4">
@@ -135,7 +169,10 @@ export default function SchedulePage() {
                 {cls.subject}
               </h2>
               <p className="text-sm text-gray-600">Date: {cls.date}</p>
-              <p className="text-sm text-gray-600">Time: {cls.time}</p>
+              <p className="text-sm text-gray-600">Day: {cls.day}</p>
+              <p className="text-sm text-gray-600">
+                Time: {cls.time}
+              </p>
               <p className="text-sm text-gray-600">Room: {cls.room}</p>
               <p className="text-sm text-gray-600">
                 Doctor:{" "}
